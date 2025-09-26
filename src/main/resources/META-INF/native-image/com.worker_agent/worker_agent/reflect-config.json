@@ -1,0 +1,19 @@
+[
+  {
+    "name": "jade.imtp.leap.LEAPIMTPManager",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "jade.core.AgentContainerImpl",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "jade.imtp.leap.JICP.JICPPeer",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  }
+]
