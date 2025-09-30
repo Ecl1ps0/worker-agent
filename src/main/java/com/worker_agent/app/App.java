@@ -1,6 +1,7 @@
 package com.worker_agent.app;
 
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import jade.core.Profile;
@@ -10,26 +11,25 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
+import com.worker_agent.utils.IPReciever;
+
 @SuppressWarnings("CallToPrintStackTrace")
 public class App {
     public static void main(String[] args) {
         Runtime rt = Runtime.instance();
         Profile profile = new ProfileImpl();
 
-        // String mainHost = args.length > 0 ? args[0] : "localhost";
-        String mainHost = System.getenv("MAIN_HOST");
+        String mainHost = System.getProperty("MAIN_HOST");
         profile.setParameter(Profile.MAIN_HOST, mainHost);
         profile.setParameter(Profile.MAIN_PORT, "1099");
         profile.setParameter(Profile.GUI, "false");
 
-        String localHost;
         try {
-            localHost = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            localHost = "127.0.0.1";
+            profile.setParameter(Profile.LOCAL_HOST, IPReciever.getLocalIp());
+            profile.setParameter(Profile.LOCAL_PORT, "1099");
+        } catch (SocketException e) {
+            e.printStackTrace();
         }
-        profile.setParameter(Profile.LOCAL_HOST, localHost);
-        profile.setParameter(Profile.LOCAL_PORT, "1099");
 
         ContainerController container = rt.createAgentContainer(profile);
 

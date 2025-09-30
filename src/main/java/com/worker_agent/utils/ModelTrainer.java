@@ -27,7 +27,7 @@ public class ModelTrainer {
             throw new IOException("The File path is empty!");
         }
 
-        ProcessBuilder pb = new ProcessBuilder("python3", filePath);
+        ProcessBuilder pb = new ProcessBuilder(filePath);
         pb.redirectErrorStream(true);
         this.trainProcess = pb.start();
 

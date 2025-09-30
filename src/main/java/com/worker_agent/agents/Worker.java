@@ -22,7 +22,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 public class Worker extends Agent {
     final private HttpClient client = HttpClient.newHttpClient();
     final private ModelTrainer trainer = new ModelTrainer(client);
-    final private String uploadURL = String.format("http://%s:8080/upload/", System.getenv("MAIN_HOST"));
+    final private String uploadURL = String.format("http://%s:8080/upload/", System.getProperty("MAIN_HOST"));
 
     @Override
     @SuppressWarnings("CallToPrintStackTrace")

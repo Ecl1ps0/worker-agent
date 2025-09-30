@@ -1,7 +1,9 @@
 Build and run agent
 
 ```
-docker build -t worker-agent .
+mvn clean install
 
-docker run --gpus all --rm --network jade-net --name worker-agent -e MAIN_HOST=main-agent worker-agent
+mvn exec:java -DMAIN_HOST="192.168.10.4"
 ```
+
+[REMARK]: # "Use actual IP address of the machine in `MAIN_HOST`"
