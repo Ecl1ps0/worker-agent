@@ -1,8 +1,6 @@
 package com.worker_agent.app;
 
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 import jade.core.Profile;
 import jade.core.ProfileImpl;

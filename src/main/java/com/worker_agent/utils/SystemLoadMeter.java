@@ -41,21 +41,29 @@ public interface SystemLoadMeter {
 
     private static double getVRAMLoad() {
         try {
-            var process = new ProcessBuilder("nvidia-smi",
-                                            "--query-gpu=utilization.gpu",
-                                            "--format=csv,noheader,nounits")
-                                            .start();
+            ProcessBuilder pb = new ProcessBuilder(
+                "bash", "-c",
+                "nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null || " +
+                "rocm-smi --showuse 2>/dev/null || " +
+                "amd-smi --query=gpu_usage --format=csv,noheader,nounits 2>/dev/null || " +
+                "sudo powermetrics --samplers gpu_power -n1 | grep 'GPU Power'"
+            );
+            var process = pb.start();
 
             try (var sc = new Scanner(process.getInputStream())) {
-                if (sc.hasNextInt()) {
-                    int usage = sc.nextInt();
-                    return usage / 100.0;
+                while (sc.hasNext()) {
+                    if (sc.hasNextInt()) {
+                        int usage = sc.nextInt();
+                        return usage / 100.0;
+                    } else {
+                        sc.next(); // skip non-numeric tokens
+                    }
                 }
             }
         } catch (Exception e) {
-            System.err.println("GPU not available (nvidia-smi not found). Skipping VRAM load.");
+            System.err.println("GPU not available (no supported vendor tool found). Skipping VRAM load.");
         }
-        return 0.0; 
+        return 0.0;
     }
 
     public static BigDecimal getAvgLoad() {
