@@ -48,9 +48,9 @@ public class Worker extends Agent {
                     return;
                 }
 
-                var reply = msg.createReply();
                 switch (msg.getPerformative()) {
                     case ACLMessage.QUERY_IF:
+                        ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.INFORM);
 
                         if (UserActivityDetector.isUserActiveRecently(60000)) {
@@ -62,10 +62,6 @@ public class Worker extends Agent {
                         break;
 
                     case ACLMessage.REQUEST:
-                        reply.setPerformative(ACLMessage.AGREE);
-                        reply.setContent("Training started on" + dfd.getName());
-                        send(reply);
-
                         new Thread(() -> {
                             try {
                                 File trainedModel = trainer.startTraining(msg.getContent());
@@ -78,6 +74,11 @@ public class Worker extends Agent {
 
                                 HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
                                 System.out.println("The trained model sent with status code: " + res.statusCode());
+
+                                ACLMessage confirm = msg.createReply();
+                                confirm.setPerformative(ACLMessage.CONFIRM);
+                                confirm.setContent(msg.getContent());
+                                send(confirm);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -87,11 +88,8 @@ public class Worker extends Agent {
                 
                     default:
                         System.out.println("Unknown message");
-
                         break;
                 }
-
-                block();
             }
         });
     }
