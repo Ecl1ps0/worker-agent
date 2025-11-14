@@ -1,3 +1,9 @@
+Add jade lib manually:
+
+```
+mvn install:install-file -Dfile="./lib/jade.jar" -DgroupId="jade" -DartifactId="jade" -Dversion="4.5.0" -Dpackaging="jar"
+```
+
 Build and run agent
 
 ```
