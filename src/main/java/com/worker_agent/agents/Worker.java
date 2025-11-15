@@ -2,7 +2,6 @@ package com.worker_agent.agents;
 
 import com.worker_agent.utils.ModelTrainer;
 import com.worker_agent.utils.SystemLoadMeter;
-import com.worker_agent.utils.UserActivityDetector;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -18,9 +17,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.util.concurrent.Executors;
 
 public class Worker extends Agent {
-    final private HttpClient client = HttpClient.newHttpClient();
+    final private HttpClient client = HttpClient.newBuilder()
+                                    .executor(Executors.newFixedThreadPool(4))
+                                    .build();
     final private ModelTrainer trainer = new ModelTrainer(client);
     final private String uploadURL = String.format("http://%s:8080/upload/", System.getProperty("MAIN_HOST"));
 
@@ -52,7 +54,6 @@ public class Worker extends Agent {
                     case ACLMessage.QUERY_IF:
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.INFORM);
-
                         
                         reply.setContent(String.valueOf(SystemLoadMeter.getAvgLoad()));
                         
