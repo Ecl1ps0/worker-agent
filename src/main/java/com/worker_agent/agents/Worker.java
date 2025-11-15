@@ -53,10 +53,9 @@ public class Worker extends Agent {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.INFORM);
 
-                        if (UserActivityDetector.isUserActiveRecently(60000)) {
-                            reply.setContent(String.valueOf(SystemLoadMeter.getAvgLoad()));
-                        } else reply.setContent("100.00");
-
+                        
+                        reply.setContent(String.valueOf(SystemLoadMeter.getAvgLoad()));
+                        
                         send(reply);
 
                         break;
