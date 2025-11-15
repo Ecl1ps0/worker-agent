@@ -33,7 +33,7 @@ public class App {
 
         try {
             AgentController worker = container.createNewAgent(
-                    "worker",
+                    "worker" + System.currentTimeMillis(),
                     "com.worker_agent.agents.Worker",
                     null
             );
