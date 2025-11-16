@@ -64,20 +64,27 @@ public class Worker extends Agent {
                     case ACLMessage.REQUEST:
                         new Thread(() -> {
                             try {
+                                long start = System.currentTimeMillis();
+
                                 File trainedModel = trainer.startTraining(msg.getContent());
                                 System.out.println("Start training model: " + trainedModel.getName());
-                                
+
+                                long duration = System.currentTimeMillis() - start;
+                                double durationSeconds = duration / 1000.0;
+
+                                // Upload model
                                 HttpRequest req = HttpRequest.newBuilder(new URI(uploadURL + trainedModel.getName()))
-                                    .header("Content-Type", "application/octet-stream")
-                                    .POST(BodyPublishers.ofFile(trainedModel.toPath()))
-                                    .build();
+                                        .header("Content-Type", "application/octet-stream")
+                                        .POST(BodyPublishers.ofFile(trainedModel.toPath()))
+                                        .build();
 
                                 HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
                                 System.out.println("The trained model sent with status code: " + res.statusCode());
 
+                                // Send back CONFIRM + metadata
                                 ACLMessage confirm = msg.createReply();
                                 confirm.setPerformative(ACLMessage.CONFIRM);
-                                confirm.setContent(msg.getContent());
+                                confirm.setContent(msg.getContent() + "|" + durationSeconds);
                                 send(confirm);
                             } catch (Exception e) {
                                 e.printStackTrace();
