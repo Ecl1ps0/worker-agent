@@ -5,18 +5,23 @@ import com.worker_agent.utils.SystemLoadMeter;
 
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.time.Instant;
 import java.util.concurrent.Executors;
 
 public class Worker extends Agent {
@@ -24,6 +29,7 @@ public class Worker extends Agent {
                                     .executor(Executors.newFixedThreadPool(4))
                                     .build();
     final private ModelTrainer trainer = new ModelTrainer(client);
+    private transient BufferedWriter metricsOut;
     final private String uploadURL = String.format("http://%s:8080/upload/", System.getProperty("MAIN_HOST"));
 
     @Override
@@ -41,6 +47,38 @@ public class Worker extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
+
+        try {
+            metricsOut = new BufferedWriter(new FileWriter("worker-metrics.csv", true));
+            metricsOut.write("ts,cpu_percent,ram_percent,gpu_percent,avg_load\n");
+            metricsOut.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        addBehaviour(new TickerBehaviour(this, 2000) { // every 2 seconds
+            @Override
+            protected void onTick() {
+                try {
+                    var ts = Instant.now().toString();
+                    var cpu = SystemLoadMeter.getCpuPercent();
+                    var ram = SystemLoadMeter.getRamPercent();
+                    var gpu = SystemLoadMeter.getGpuPercent();
+                    var avg = SystemLoadMeter.getAvgLoad();
+
+                    String line = String.format("%s,%s,%s,%s,%s%n", ts, cpu, ram, gpu, avg);
+
+                    System.out.print("[METRICS] " + line);
+
+                    if (metricsOut != null) {
+                        metricsOut.write(line);
+                        metricsOut.flush();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         addBehaviour(new CyclicBehaviour() {
             @Override
@@ -99,5 +137,14 @@ public class Worker extends Agent {
                 }
             }
         });
+    }
+
+    @Override
+    protected void takeDown() {
+        try {
+            if (metricsOut != null) metricsOut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
