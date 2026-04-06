@@ -93,7 +93,8 @@ public class Worker extends Agent {
                         ACLMessage reply = msg.createReply();
                         reply.setPerformative(ACLMessage.INFORM);
                         
-                        reply.setContent(String.valueOf(SystemLoadMeter.getAvgLoad()));
+                        var osWithLoad = SystemLoadMeter.osName() + "|" + String.valueOf(SystemLoadMeter.getAvgLoad());
+                        reply.setContent(osWithLoad);
                         
                         send(reply);
 
@@ -104,6 +105,7 @@ public class Worker extends Agent {
                             try {
                                 long start = System.currentTimeMillis();
 
+                                System.out.println("Task recieved");
                                 File trainedModel = trainer.startTraining(msg.getContent());
                                 System.out.println("Start training model: " + trainedModel.getName());
 

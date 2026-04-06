@@ -31,19 +31,19 @@ public interface SystemLoadMeter {
         return v;
     }
 
-    private static String osName() {
+    public static String osName() {
         return System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
     }
 
-    private static boolean isWindows() {
+    public static boolean isWindows() {
         return osName().contains("win");
     }
 
-    private static boolean isLinux() {
+    public static boolean isLinux() {
         return osName().contains("linux");
     }
 
-    private static boolean isMac() {
+    public static boolean isMac() {
         return osName().contains("mac");
     }
 
@@ -144,11 +144,18 @@ public interface SystemLoadMeter {
     }
 
     private static double getGpuLoadMac() throws Exception {
-        String out = runCommand(List.of(
-                "bash", "-c",
-                "powermetrics --samplers gpu_power -n1"
-        ));
-        return clamp01(parseFirstPercentNumber(out));
+        try {
+            String out = runCommand(List.of(
+                    "sudo",
+                    "/usr/bin/powermetrics",
+                    "--samplers",
+                    "gpu_power",
+                    "-n1"
+            ));
+            return clamp01(parseFirstPercentNumber(out));
+        } catch (Exception e) {
+            return 0.0;
+        }
     }
 
     private static double getGpuLoad() {
