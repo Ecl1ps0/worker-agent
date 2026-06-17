@@ -29,7 +29,7 @@ public class ModelTrainer {
 
         ProcessBuilder pb = new ProcessBuilder(filePath);
         if (SystemLoadMeter.isLinux()) {
-            pb = new ProcessBuilder("sudo", "-i", "wine" , filePath);
+            pb = new ProcessBuilder("wine" , filePath);
         }
         pb.redirectErrorStream(true);
         this.trainProcess = pb.start();
